@@ -3,6 +3,13 @@ FROM node:12.21.0-buster-slim as base
 # This image is NOT made for production use.
 LABEL maintainer="Eero Ruohola <eero.ruohola@shuup.com>"
 
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3-dev \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update \
     && apt-get --assume-yes install \
         libpangocairo-1.0-0 \
@@ -10,7 +17,22 @@ RUN apt-get update \
         python3-dev \
         python3-pil \
         python3-pip \
+        curl \
     && rm -rf /var/lib/apt/lists/ /var/cache/apt/
+
+#RUN apt-get install -y cargo
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Add .cargo/bin to PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Check cargo is visible
+RUN rustup update
+
+RUN pip3 install cryptography==3.4.7
+
+RUN pip3 install markupsafe==2.0.1
 
 # These invalidate the cache every single time but
 # there really isn't any other obvious way to do this.
